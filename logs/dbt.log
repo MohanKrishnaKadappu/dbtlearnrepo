@@ -1,0 +1,29 @@
+[0m22:34:53.864687 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000147798C5730>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000014777787A70>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000014779CA4770>]}
+
+
+============================== 22:34:53.882357 | c7b32dd8-5557-41dd-a8c6-d19eacd883da ==============================
+[0m22:34:53.882357 [info ] [MainThread]: Running with dbt=1.11.0-b4
+[0m22:34:53.882357 [debug] [MainThread]: running dbt with arguments {'profiles_dir': 'C:\\Users\\UJ921DJ\\.dbt', 'use_colors': 'True', 'no_print': 'None', 'target_path': 'None', 'printer_width': '80', 'warn_error': 'None', 'log_path': 'logs', 'fail_fast': 'False', 'partial_parse': 'True', 'send_anonymous_usage_stats': 'True', 'static_parser': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'indirect_selection': 'eager', 'use_experimental_parser': 'False', 'version_check': 'True', 'quiet': 'False', 'introspect': 'True', 'empty': 'None', 'log_cache_events': 'False', 'debug': 'False', 'log_format': 'default', 'invocation_command': 'dbt init', 'cache_selected_only': 'False', 'write_json': 'True'}
+[0m22:35:10.978868 [debug] [MainThread]: Starter project path: c:\Users\UJ921DJ\OneDrive - EY\Documents\Personal files folder\Snowflake productivity\dbtlearnrepo\.venv\Lib\site-packages\dbt\include\starter_project
+[0m22:35:11.098223 [info ] [MainThread]: 
+Your new dbt project "dbt_training" was created!
+
+For more information on how to configure the profiles.yml file,
+please consult the dbt documentation here:
+
+  https://docs.getdbt.com/docs/configure-your-profile
+
+One more thing:
+
+Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
+
+  https://community.getdbt.com/
+
+Happy modeling!
+
+[0m22:35:11.113868 [info ] [MainThread]: Setting up your profile.
+[0m22:36:38.516766 [info ] [MainThread]: Profile dbt_training written to C:\Users\UJ921DJ\.dbt\profiles.yml using target's profile_template.yml and your supplied values. Run 'dbt debug' to validate the connection.
+[0m22:36:38.536199 [debug] [MainThread]: Command `dbt init` succeeded at 22:36:38.536199 after 105.13 seconds
+[0m22:36:38.536199 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000014779F5D880>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001477C5167E0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001477C472B40>]}
+[0m22:36:38.538130 [debug] [MainThread]: Flushing usage events
+[0m22:36:40.688386 [debug] [MainThread]: An error was encountered while trying to flush usage events
