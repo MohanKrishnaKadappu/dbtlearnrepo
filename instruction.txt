@@ -13,3 +13,17 @@ dbt run --select stg_expense_claims+
 to run upstream along with upstream dependencies [child]
 
 dbt run --select +final_expense_claims
+
+to run at folder level - all models
+dbt run --select models/staging   
+
+--to not run a model but all models
+dbt run --exclude my_first_dbt_model
+
+
+
+--question
+--significance of threads in profiles.yml  -- 3 threads
+
+----question 
+--whatever i have in staging folder models shouldnt be visible
