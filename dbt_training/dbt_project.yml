@@ -31,6 +31,14 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   dbt_training:
-    # Config indicated by + and applies to all files under models/example/
-    example:
+    staging:
+      +database: DEMO_DB
+      +schema: staging
+      +materialized: table
+    cleansed:
+      +database: DEMO_DB
+      +schema: cleansed
       +materialized: view
+    # Config indicated by + and applies to all files under models/example/
+  #ANYTHING INSIDE STAGING FOLDER , MUST BE GOING INSIDE STAGING SSCHEMA
+  #anything downstream models to be run dbt run --select stg_expenses+     [condition it must be ref{{}}] 

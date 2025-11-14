@@ -2,3 +2,14 @@
 
 
 .venv\scripts\activate
+
+
+to run single model  dbt run --select final_expense_claims.sql
+
+to run a parent along with downstream dependencies [child]
+
+dbt run --select stg_expense_claims+
+
+to run upstream along with upstream dependencies [child]
+
+dbt run --select +final_expense_claims
