@@ -1,9 +1,8 @@
-{{ config(materialized='ephemeral') }}
+{{ config(materialized='view') }}
 
-with cte as
-(
-    select * from 
-    Snowflake_sample_data.TPCH_SF1.ORDERS
-)
-
-select * from cte
+SELECT 
+   order_id,
+    customer_id,
+    order_date,
+    total_amount
+FROM {{ source('ecommerce', 'raw_orders') }} o

@@ -1,4 +1,4 @@
-{{ config(materialized='ephemeral') }}
+{{config(materialized='view',secure=true)}}
 
 with cte as
 (

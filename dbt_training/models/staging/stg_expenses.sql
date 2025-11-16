@@ -7,7 +7,7 @@ with ranked_claims as (
             partition by EMPLOYEE_ID
             order by CLAIM_DATE desc
         ) as rn
-    from RAW.PUBLIC.EXPENSE_CLAIMS
+    from source_raw.PUBLIC.EXPENSE_CLAIMS
 )
 
 SELECT 

@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: ecommerce
+    database: raw
+    schema: ecommerce
+    tables:
+      - name: raw_customers
+      - name: raw_orders
+  - name: rawsource
+    database: DEMO_DB
+    schema: PUBLIC
+    tables:
+      - name: raw_orders
+      - name: bank_transactions_raw
+      - name: customers

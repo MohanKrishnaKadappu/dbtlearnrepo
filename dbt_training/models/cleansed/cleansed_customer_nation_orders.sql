@@ -1,5 +1,5 @@
 --if you can use 2-3 models to join the multipke (2/3 ref functions to create one model)
-{{ config(materialized='table') }}
+{{ config(materialized='table',transient=false) }}
 with customer as
 (
 select * from 
@@ -8,7 +8,7 @@ select * from
 ),
 orders as
 (
- select * from {{ ref('stg_orders') }} 
+ select * from {{ ref('stg_order') }} 
 ),
    -- on c.c_custkey = o.o_custkey
 nation as(
@@ -16,7 +16,7 @@ select * from {{ ref('stg_nation') }}
 ),
  
    -- on c.c_nationkey = n.n_nationkey
-joined_data as
+cleansed_customer_nation_orders as
 (
     select 
     c.c_custkey as customer_key,    
@@ -38,4 +38,4 @@ joined_data as
     left join nation n
     on c.c_nationkey = n.n_nationkey
 )
-select * from joined_data
+select * from cleansed_customer_nation_orders

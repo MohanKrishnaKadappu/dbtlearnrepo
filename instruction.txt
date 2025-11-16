@@ -5,6 +5,8 @@
 
 
 to run single model  dbt run --select final_expense_claims.sql
+or
+dbt run -s final_expense_claims
 
 to run a parent along with downstream dependencies [child]
 
@@ -13,6 +15,7 @@ dbt run --select stg_expense_claims+
 to run upstream along with upstream dependencies [child]
 
 dbt run --select +final_expense_claims
+
 
 to run at folder level - all models
 dbt run --select models/staging   
@@ -27,3 +30,24 @@ dbt run --exclude my_first_dbt_model
 
 ----question 
 --whatever i have in staging folder models shouldnt be visible
+
+
+--materialization
+--what if I need you keep permanent table , view - [secure,materialized],dynmaic table
+--then go to profiles.yml/dbt_project.yml +materilized: view command
+--you can update it
+--example - {{ config(materialized='table',transient=false) }}  --for permanent table
+-- similary for secure view 
+{{config(materialized='view',secure=true)}}
+
+
+--we shall define sources in schema.yml
+--schema name of file is not standardized
+
+
+--incremental strategies
+--in dbt we have 4 strategies
+--append
+--merge
+--insertt+overwrite
+---delete-insertt

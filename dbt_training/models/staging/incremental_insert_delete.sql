@@ -1,0 +1,32 @@
+{{
+    config(
+        materialized='incremental',
+        incremental_strategy='delete+insert',
+        unique_key='id'
+        
+    )
+}}
+
+--DELETE INSERT WHEN YOU WILL USE , WHEN YOU WANT TO REFERESH A SUBSET IOF RULES
+--MEANS N TARGET TABLE ONLY FEW ROWS TO BE REFRESHED INTEAD OF OLD DATA 
+--DELETE DATA IN TARGET THEN INSERT FRESH DATA
+
+SELECT 
+    TXN_DATE,
+    ID,
+    STATUS,
+    AMOUNT
+FROM DEMO_DB.PUBLIC.DAILY_TRANSACTIONS
+
+{% if is_incremental() %}
+    WHERE TXN_DATE = (
+        SELECT MAX(TXN_DATE) FROM {{ this }}
+        -- IMP : FILER USES MAX(TXN_DATE) FROM THE TARGET TABLE ITSELF {{ this }}
+
+        --SELECT COALESCE(MAX(TXN_DATE), '1900-01-01'::DATE) FROM {{ this }}
+        --SUPPPOSE YOUR REQ CHANGES , DELETE INSERT BASED ON LAST 3 DAYS
+        --WHERE TXN_DATE >= DATEADD(DAY, -3, (SELECT MAX(TXN_DATE) FROM {{ this }}))
+        --SUPPPOSE YOUR REQ CHANGES , DELETE INSERT BASED ON LAST 1 MONTHS
+        --WHERE TXN_DATE >= DATEADD(MONTH, -1, (SELECT MAX(TXN_DATE) FROM {{ this }}))
+    )
+{% endif %}
