@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+    - name: raw_practice
+      database: DBT_PRACTICE
+      schema: PUBLIC
+      tables:
+        - name: customers
+          description: "Staging table for customer data"
+        - name: orders
+          description: "Staging table for orders data"

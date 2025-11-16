@@ -39,6 +39,11 @@ models:
       +database: DEMO_DB
       +schema: cleansed
       +materialized: view
+
+    dynamic_tables:
+      +database: DEMO_DB
+      +schema: DYNAMIC
+      +materialized: table
    # raw:
     #  +database: raw
     #  +schema: ecommerce

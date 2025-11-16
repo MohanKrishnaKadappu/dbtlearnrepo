@@ -51,3 +51,32 @@ dbt run --exclude my_first_dbt_model
 --merge
 --insertt+overwrite
 ---delete-insertt
+
+
+--run full folder 
+
+ dbt run --select models/dynamic_tables
+
+
+ https://cloudyard.in/2025/08/building-iceberg-tables-in-snowflake-macros-vs-native-support/
+
+
+ version: 2
+
+sources:
+    - name: practice
+      database: DBT_PRACTICE
+      schema: PUBLIC
+      tables:
+        - name: customers
+          description: "Staging table for customer data"
+        - name: orders
+          description: "Staging table for orders data"
+
+--first generate dbt docs
+
+ dbt docs generate 
+
+ then to serve 
+
+ dbt docs serve
