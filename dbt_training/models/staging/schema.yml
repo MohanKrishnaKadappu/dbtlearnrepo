@@ -14,3 +14,4 @@ sources:
       - name: raw_orders
       - name: bank_transactions_raw
       - name: customers
+      - name: orders
