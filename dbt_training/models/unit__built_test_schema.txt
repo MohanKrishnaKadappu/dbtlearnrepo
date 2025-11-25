@@ -1,0 +1,98 @@
+version: 2
+
+sources:
+  - name: ecommerce
+    database: raw
+    schema: ecommerce
+    tables:
+      - name: raw_customers
+      - name: raw_orders
+
+  - name: rawsource
+    database: DEMO_DB
+    schema: PUBLIC
+    tables:
+      - name: raw_orders
+      - name: bank_transactions_raw
+
+      - name: customers
+        columns:
+          - name: CUST_ID
+            tests:
+              - unique
+              - not_null
+          - name: EMAIL
+            tests:
+              - not_null
+
+      - name: orders
+        columns:
+          - name: ORDER_ID
+            tests: [not_null, unique]
+          - name: STATUS
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ['O', 'F', 'P']
+          - name: CUST_ID
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('rawsource', 'customers')
+                    field: CUST_ID
+
+  - name: raw_layer
+    database: DEMO_DB
+    schema: PIPELINE
+    tables:
+      - name: stg_customer
+        description: "Staging table for customer data"
+      - name: item
+        description: "Staging table for item data"
+
+  - name: practice
+    database: DBT_PRACTICE
+    schema: PUBLIC
+    tables:
+      - name: customer
+        description: "Staging table for customer data"
+      - name: orders
+        description: "Staging table for orders data"
+
+models:
+  - name: customers
+    description: "This table contains customer data."
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+      - name: country
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['US', 'CA', 'IN', 'UK', 'AU', 'KR', 'RU']
+
+  - name: orders
+    description: "This table contains order data."
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+        severity: warn
+        #severity: error
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('customers')
+                field: id
+      - name: status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['pending', 'shipped', 'completed']

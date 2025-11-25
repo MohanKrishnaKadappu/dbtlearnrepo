@@ -80,3 +80,85 @@ sources:
  then to serve 
 
  dbt docs serve
+
+
+
+ ----------------------------------
+
+ Praveen dbt cloudard
+
+ To save model with your own name instead of sql 
+ use alias = 'name' 
+--model/demo.sql
+{{
+    config(
+        materialized='table',
+        transient=false,
+        alias='Mohan_test',
+        query_tag='trails'
+    )
+}}
+
+SELECT 1 ID
+
+---dbt shortcuts 
+give underscore underscore then whatever as per your need 
+
+__ref 
+__conf
+
+--to execute upstream models 
+
+dbt run -s +e2_stg
+
+--I want to run all these models parallely 
+
+dbt run -s e2_core e2_stg s2
+
+--to execute upstream models amd downstream models
+
+dbt run -s +e2_stg+
+
+The --exclude flag allows you to omit certain models or directories from the run.
+dbt run --exclude staging.my_excluded_model
+
+
+Running with specific tags or configurations:
+  dbt run --select tag:my_tag
+  dbt run --select config:materialized:incremental
+
+Full refresh of incremental models:
+  dbt run --select my_incremental_model --full-refresh
+
+  --to run all models , in models folder 
+  dbt run 
+
+  --to run folde 
+  dbt run -s dynamic 
+
+
+  --question 
+  Can I store my models in a directory other than the default directory in my project 
+  --yes just add path then update in models path
+
+  model-paths: ["models","testing_outside_model"]
+
+  to run seed 
+
+  dbt seed -s file_name.csv
+
+
+  --small data / static data 
+  full truncate n load 
+
+  dbt seed --full refresh -s seed_name 
+
+--first run the models then  
+
+--run tests 
+dbt test -s customers orders
+
+
+--other way - update schema.yml 
+dbt test -s source:rawsource
+rawsource

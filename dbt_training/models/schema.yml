@@ -7,14 +7,79 @@ sources:
     tables:
       - name: raw_customers
       - name: raw_orders
+
   - name: rawsource
     database: DEMO_DB
     schema: PUBLIC
     tables:
+
       - name: raw_orders
       - name: bank_transactions_raw
+
       - name: customers
+        columns:
+          - name: CUST_ID
+            tests:
+              - unique:
+                  severity: error
+                  store_failures: true
+                  schema: AUDIT
+              - not_null:
+                  severity: error
+                  store_failures: true
+                  schema: AUDIT
+
+          - name: EMAIL
+            tests:
+              - not_null:
+                  severity: error
+                  store_failures: true
+                  schema: AUDIT
+              - matches_regex:
+                  pattern: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+                  severity: error
+                  store_failures: true
+                  schema: AUDIT
+
       - name: orders
+        columns:
+          - name: ORDER_ID
+            tests:
+              - not_null:
+                  severity: error
+                  store_failures: true
+                  schema: AUDIT
+              - unique:
+                  severity: error
+                  store_failures: true
+                  schema: AUDIT
+
+          - name: STATUS
+            tests:
+              - not_null:
+                  severity: error
+                  store_failures: true
+                  schema: AUDIT
+              - accepted_values:
+                  arguments:
+                    values: ['O', 'F', 'P']
+                  severity: error
+                  store_failures: true
+                  schema: AUDIT
+
+          - name: CUST_ID
+            tests:
+              - not_null:
+                  severity: error
+                  store_failures: true
+                  schema: AUDIT
+              - relationships:
+                  arguments:
+                    to: source('rawsource', 'customers')
+                    field: CUST_ID
+                  severity: error
+                  store_failures: true
+                  schema: AUDIT
 
   - name: raw_layer
     database: DEMO_DB
@@ -24,6 +89,7 @@ sources:
         description: "Staging table for customer data"
       - name: item
         description: "Staging table for item data"
+
   - name: practice
     database: DBT_PRACTICE
     schema: PUBLIC
@@ -32,3 +98,75 @@ sources:
         description: "Staging table for customer data"
       - name: orders
         description: "Staging table for orders data"
+
+
+models:
+  - name: customers
+    description: "This table contains customer data."
+    columns:
+      - name: id
+        description: "The unique identifier for each customer."
+        tests:
+          - unique:
+              severity: error
+              store_failures: true
+              schema: AUDIT
+          - not_null:
+              severity: error
+              store_failures: true
+              schema: AUDIT
+
+      - name: country
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['US', 'CA', 'IN', 'UK', 'AU', 'KR', 'RU']
+              severity: error
+              store_failures: true
+              schema: AUDIT
+
+  - name: orders
+    description: "This table contains order data."
+    columns:
+      - name: order_id
+        description: "The unique identifier for each order."
+        tests:
+          - unique:
+              severity: warn
+              store_failures: true
+              schema: AUDIT
+          - not_null:
+              severity: error
+              store_failures: true
+              schema: AUDIT
+
+      - name: customer_id
+        tests:
+          - not_null:
+              severity: error
+              store_failures: true
+              schema: AUDIT
+          - relationships:
+              arguments:
+                to: ref('customers')
+                field: id
+              severity: error
+              store_failures: true
+              schema: AUDIT
+
+      - name: status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['pending', 'shipped', 'completed']
+              severity: error
+              store_failures: true
+              schema: AUDIT
+
+      # Example: date not in future
+      - name: order_date
+        tests:
+          - not_in_future:
+              severity: error
+              store_failures: true
+              schema: AUDIT

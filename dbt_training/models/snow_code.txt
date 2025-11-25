@@ -1,0 +1,675 @@
+-- Create databases
+CREATE OR REPLACE DATABASE DEMO_DB;
+CREATE DATABASE IF NOT EXISTS RAW;
+
+-- Create table
+CREATE OR REPLACE TABLE RAW.PUBLIC.EXPENSE_CLAIMS (
+    CLAIM_ID STRING,
+    EMPLOYEE_ID STRING,
+    CLAIM_DATE DATE,
+    EXPENSE_TYPE STRING,      -- Travel, Food, Accommodation, etc.
+    CLAIMED_AMOUNT NUMBER,
+    CURRENCY STRING,
+    APPROVAL_STATUS STRING,   -- Pending, Approved, Rejected
+    APPROVER_ID STRING
+);
+
+-- Insert sample data
+INSERT INTO RAW.PUBLIC.EXPENSE_CLAIMS VALUES
+    ('CLM001', 'E001', '2024-04-01', 'Travel',         12000, 'INR', 'Pending',  'MGR001'),
+    ('CLM002', 'E002', '2024-04-02', 'Food',             800, 'INR', 'Approved', 'MGR002'),
+    ('CLM003', 'E001', '2024-04-03', 'Accommodation',   5000, 'INR', 'Rejected', 'MGR001'),
+    ('CLM004', 'E003', '2024-04-04', 'Travel',          9500, 'INR', 'Pending',  'MGR003'),
+    ('CLM005', 'E001', '2024-04-01', 'Travel',         12000, 'INR', 'Pending',  'MGR001');  -- Duplicate claim
+
+
+select * from RAW.PUBLIC.EXPENSE_CLAIMS;
+
+-- I WANT NEXT SET OF LAYER EMP_ID UNIQUE
+
+select
+CLAIM_ID, EMPLOYEE_ID, CLAIM_DATE, EXPENSE_TYPE, CLAIMED_AMOUNT, CURRENCY, APPROVAL_STATUS, APPROVER_ID;
+
+SELECT * FROM DEMO_DB.STAGING.STG_EXPENSES;
+
+SELECT * FROM DEMO_DB.CLEANSED.FINAL_EXPENSE_CLAIMS;
+
+
+CREATE DATABASE BOOTCAMP_DBT;
+
+USE DATABASE DEMO_DB;
+CREATE SCHEMA ECOMMERCE;
+
+CREATE OR REPLACE TABLE DEMO_DB.ECOMMERCE.RAW_CUSTOMERS(
+CUSTOMER_ID STRING,
+NAME STRING,
+EMAIL STRING
+);
+
+CREATE OR REPLACE TABLE DEMO_DB.ECOMMERCE.RAW_ORDERS
+(
+ORDER_ID STRING,
+CUSTOMER_ID STRING,
+ORDER_DATE DATE,
+TOTAL_AMOUNT NUMBER
+);
+
+
+INSERT INTO DEMO_DB.ECOMMERCE.RAW_CUSTOMERS VALUES 
+('C001','Alice','alice@email.com'),
+('C002','Bob','bob@email.com');
+
+INSERT INTO  DEMO_DB.ECOMMERCE.RAW_ORDERS VALUES 
+('O1001','C001','2024-04-01',250),
+('O1002','C002','2024-04-02',400),
+('O1003','C003','2024-04-03',150);
+
+
+select * from DEMO_DB.STAGING.STG_RAW_ORDERS;
+
+
+
+USE DATABASE RAW;
+CREATE SCHEMA ECOMMERCE;
+
+CREATE OR REPLACE TABLE RAW.ECOMMERCE.RAW_CUSTOMERS(
+CUSTOMER_ID STRING,
+NAME STRING,
+EMAIL STRING
+);
+
+CREATE OR REPLACE TABLE RAW.ECOMMERCE.RAW_ORDERS
+(
+ORDER_ID STRING,
+CUSTOMER_ID STRING,
+ORDER_DATE DATE,
+TOTAL_AMOUNT NUMBER
+);
+
+
+INSERT INTO RAW.ECOMMERCE.RAW_CUSTOMERS VALUES 
+('C001','Alice','alice@email.com'),
+('C002','Bob','bob@email.com');
+
+INSERT INTO  RAW.ECOMMERCE.RAW_ORDERS VALUES 
+('O1001','C001','2024-04-01',250),
+('O1002','C002','2024-04-02',400),
+('O1003','C003','2024-04-03',150);
+
+alter database raw rename to source_raw;
+
+CREATE DATABASE RAW;
+USE DATABASE RAW;
+CREATE SCHEMA ECOMMERCE;
+
+CREATE OR REPLACE TABLE RAW.ECOMMERCE.RAW_CUSTOMERS(
+CUSTOMER_ID STRING,
+NAME STRING,
+EMAIL STRING
+);
+
+CREATE OR REPLACE TABLE RAW.ECOMMERCE.RAW_ORDERS
+(
+ORDER_ID STRING,
+CUSTOMER_ID STRING,
+ORDER_DATE DATE,
+TOTAL_AMOUNT NUMBER
+);
+
+
+INSERT INTO RAW.ECOMMERCE.RAW_CUSTOMERS VALUES 
+('C001','Alice','alice@email.com'),
+('C002','Bob','bob@email.com');
+
+INSERT INTO  RAW.ECOMMERCE.RAW_ORDERS VALUES 
+('O1001','C001','2024-04-01',250),
+('O1002','C002','2024-04-02',400),
+('O1003','C003','2024-04-03',150);
+
+
+select * from raw.ecommerce.raw_orders;
+
+--next day you get new record n also updated record
+update raw.ecommerce.raw_orders
+set total_amount = 420
+where order_id = 'O1002';
+
+INSERT INTO  RAW.ECOMMERCE.RAW_ORDERS VALUES
+('O1003','C001','2024-04-03',150);
+
+select * from raw.ecommerce.raw_orders;
+
+select * from DEMO_DB.STAGING.FCT_ORDERS_INCREMENTAL;
+
+--01c06c40-0003-09b5-0004-064b0005e16a  
+--merge statement
+
+select * from DEMO_DB.STAGING.FCT_ORDERS_INCREMENTAL;
+
+--CREATE TABLE
+CREATE TABLE DEMO_DB.PUBLIC.DAILY_TRANSACTIONS (
+    TXN_DATE DATE NOT NULL,
+    ID INT NOT NULL,
+    STATUS VARCHAR(20),
+    AMOUNT DECIMAL(10,2)
+    
+);
+
+INSERT INTO DEMO_DB.PUBLIC.DAILY_TRANSACTIONS (TXN_DATE, ID, STATUS, AMOUNT)
+VALUES 
+('2025-11-15', 1001, 'SUCCESS', 250.75),
+('2025-11-15', 1002, 'FAILED', 0.00),
+('2025-11-16', 1003, 'PENDING', 120.50),
+('2025-11-16', 1004, 'SUCCESS', 999.99),
+('2025-11-16', 1005, 'SUCCESS', 45.00);
+
+
+select * from DEMO_DB.STAGING.INCREMENTAL_INSERT_OVERWITE;
+SELECT * FROM DEMO_DB.PUBLIC.DAILY_TRANSACTIONS;
+UPDATE DEMO_DB.PUBLIC.DAILY_TRANSACTIONS
+SET AMOUNT = 350
+WHERE TXN_DATE = '2025-11-15' AND ID = 1001;
+
+INSERT INTO 
+DEMO_DB.PUBLIC.DAILY_TRANSACTIONS
+VALUES 
+('2025-11-15',1006,'FAILED',400);
+
+--WHEN YOU RE-RUN THE M9ODEL
+--IT DELETES AND RELOAD
+--01c06c5d-0003-0d52-0004-064b0005f41e
+/*
+delete from DEMO_DB.staging.incremental_insert_overwite as DBT_INTERNAL_DEST
+        where (id) in (
+            select distinct id
+            from DEMO_DB.staging.incremental_insert_overwite__dbt_tmp as DBT_INTERNAL_SOURCE
+        )
+/* {"app": "dbt", "dbt_version": "1.11.0b4", "profile_name": "dbt_training", "target_name": "dev", "node_id": "model.dbt_training.incremental_insert_overwite"} */
+;
+/*
+insert into DEMO_DB.staging.incremental_insert_overwite ("TXN_DATE", "ID", "STATUS", "AMOUNT")
+    (
+        select "TXN_DATE", "ID", "STATUS", "AMOUNT"
+        from DEMO_DB.staging.incremental_insert_overwite__dbt_tmp
+    )
+/* {"app": "dbt", "dbt_version": "1.11.0b4", "profile_name": "dbt_training", "target_name": "dev", "node_id": "model.dbt_training.incremental_insert_overwite"} */;
+
+SELECT * FROM DEMO_DB.STAGING.INCREMENTAL_INSERT_OVERWITE;
+
+SELECT 
+    TXN_DATE,
+    ID,
+    STATUS,
+    AMOUNT
+FROM DEMO_DB.PUBLIC.DAILY_TRANSACTIONS;
+
+SELECT MAX(TXN_DATE) FROM DEMO_DB.STAGING.INCREMENTAL_INSERT_OVERWITE;
+
+
+CREATE TABLE DEMO_DB.PUBLIC.RAW_ORDERS(
+ORDER_ID INT,
+CUSTOMER_ID INT,
+AMOUNT NUMBER,
+ORDER_DATE DATE
+);
+
+INSERT INTO DEMO_DB.PUBLIC.RAW_ORDERS VALUES
+(101,1,95,CURRENT_DATE()-4),
+(102,2,200,CURRENT_DATE()-4),
+(103,3,150,CURRENT_DATE()-3);
+
+select * from DEMO_DB.PUBLIC.RAW_ORDERS;
+
+DROP TABLE  DEMO_DB.STAGING.INCREMENTAL_INSERT_OVERWITE;
+
+select * from DEMO_DB.STAGING.INCREMENTAL_INSERT_DELETE;
+
+select * from DEMO_DB.STAGING.INCREMENTAL_INSERT_AND_OVERWRITE;
+
+CREATE OR REPLACE TABLE DEMO_DB.PUBLIC.BANK_TRANSACTIONS_RAW (
+    TXN_ID STRING,
+    ACCOUNT_ID STRING,
+    TXN_DATE DATE,
+    TXN_TYPE STRING,       -- Credit / Debit
+    AMOUNT NUMBER(10,2),
+    CREATED_AT TIMESTAMP   -- Ingestion timestamp
+);
+
+-- Day-1 batch
+INSERT INTO DEMO_DB.PUBLIC.BANK_TRANSACTIONS_RAW VALUES
+('T001', 'ACC001', '2024-05-01', 'Credit', 1000.00, CURRENT_TIMESTAMP),
+('T002', 'ACC002', '2024-05-01', 'Debit', 250.00, CURRENT_TIMESTAMP),
+('T003', 'ACC001', '2024-05-01', 'Debit', 100.00, CURRENT_TIMESTAMP);
+
+select * from DEMO_DB.STAGING.INC_BANK_TRANSACTIONS;
+
+-- Day-2 batch , again into source
+INSERT INTO DEMO_DB.PUBLIC.BANK_TRANSACTIONS_RAW VALUES
+('T001', 'ACC001', '2024-05-01', 'Credit', 1000.00, CURRENT_TIMESTAMP),
+('T002', 'ACC002', '2024-05-01', 'Debit', 250.00, CURRENT_TIMESTAMP),
+('T003', 'ACC001', '2024-05-01', 'Debit', 100.00, CURRENT_TIMESTAMP);
+
+--6 rows in src table
+select * from DEMO_DB.PUBLIC.BANK_TRANSACTIONS_RAW;
+
+--it will just load the data as is..no dupilcate etc
+
+
+--MACROS TUTORIAL
+
+CREATE OR REPLACE TABLE demo_db.public.customers (
+    customer_id INT,
+    first_name STRING,
+    last_name STRING,
+    email STRING,
+    country STRING
+);
+
+INSERT INTO demo_db.public.customers (customer_id, first_name, last_name, email, country) VALUES
+(1, 'John', 'Doe', 'JOHN.DOE@example.com', 'usa'),
+(2, 'Alice', 'Smith', 'ALICE.SMITH@example.com', 'India'),
+(3, 'Bob', 'Brown', 'bob.brown@example.com', 'UK'),
+(4, 'Mary', 'Thomas', 'MARY.THOMAS@example.com', 'usa'),
+(5, 'Rahul', 'Mehra', 'rahul.mehra@example.com', 'India');
+
+select 
+    TRIM(UPPER(first_name)) as first_name_clean,
+    TRIM(UPPER(first_name)) as first_name_clean,
+    lower(email) as email,
+    initcap(country) as country_Clean
+from demo_db.public.customers;    
+--from {{ref('customers')}};
+
+
+select * from DEMO_DB.STAGING.CUSTOMER_UPPER_NAME;
+
+
+CREATE OR REPLACE TABLE demo_db.public.orders (
+    order_id INT,
+    customer_id INT,
+    order_date DATE,
+    amount DECIMAL,
+    status STRING
+);
+
+INSERT INTO DEMO_DB.PUBLIC.ORDERS VALUES
+(1, 101, '2025-09-01', 500, 'PAID'),
+(2, 102, '2025-09-02', 1200, 'SHIPPED'),
+(3, 103, '2025-09-03', 800, 'PENDING'),
+(4, 104, '2025-09-03', 2500, 'PAID');
+
+with source as (
+    select 
+        order_id,
+        customer_id,
+        amount,
+          --tax_rate 10 percent
+    (amount * 0.1) as TAX_AMOUNT,
+    (amount * (1 + 0.1)) as TOTAL_AMOUNT
+  --passing column name and tax rate 8 percent
+    from DEMO_DB.PUBLIC.orders
+)
+
+select * 
+from source;
+
+select * from DEMO_DB.STAGING.STG_ORDERS_TAX;
+
+--macros for audit
+USE DATABASE DEMO_DB;
+CREATE SCHEMA AUDIT;
+CREATE OR REPLACE TABLE DEMO_DB.AUDIT.LOAD_LOG (
+    TABLE_NAME STRING,
+    ROW_COUNT INT,
+    LOADED_AT TIMESTAMP
+);
+
+select * from audit.load_log;
+
+CREATE NOTIFICATION INTEGRATION EMAIL_ALERT_INT
+    TYPE = EMAIL
+    ENABLED = TRUE
+    ALLOWED_RECIPIENTS = ('mohan.krishna.k@gds.ey.com');
+
+
+    CALL SYSTEM$SEND_EMAIL(
+    'EMAIL_ALERT_INT',
+    'mohan.krishna.k@gds.ey.com',
+    'Snowflake Email Test',
+    'Hello! Your Snowflake email integration is working.'
+);
+
+create table public.customers_raw(
+id int,
+name string
+);
+
+insert into public.customers_raw values 
+(1,'Alice'),
+(2,'Bob'),
+(2,'Bob'), --duplicate
+(3,'Charlie');
+
+create table public.audit_logs(
+model_name string,
+event string,
+run_at timestamp,
+user_name string
+);
+
+select * from public.audit_logs;
+
+create or replace role analyst_fr;
+grant usage on database demo_db to role analyst_fr;
+grant usage on schema demo_db.public to role analyst_fr;
+grant usage on schema demo_db.staging to role analyst_fr;
+grant usage on warehouse compute_wh to role analyst_fr;
+grant role analyst_fr to user MOHAN;
+
+use role analyst_fr;
+show tables;
+
+
+--audit vala macro
+-- Databases & schemas
+use database demo_db;
+CREATE DATABASE IF NOT EXISTS DEMO_DB;
+CREATE SCHEMA IF NOT EXISTS DEMO_DB.RAW;
+CREATE SCHEMA IF NOT EXISTS DEMO_DB.AUDIT;
+CREATE SCHEMA IF NOT EXISTS DEMO_DB.GOVERNANCE;
+
+-- Tiny raw source
+CREATE OR REPLACE TABLE DEMO_DB.RAW.ORDERS (
+    order_id INT,
+    customer_id INT,
+    amount NUMBER(10,2)
+);
+
+INSERT INTO DEMO_DB.RAW.ORDERS VALUES
+    (1,101,120.00),(2,102,80.00),(3,102,40.00),(4,103,25.00);
+
+-- Audit table (for macro 1)
+CREATE OR REPLACE TABLE DEMO_DB.AUDIT.MODEL_RUN_LOG (
+    model_name STRING,
+    event STRING,
+    run_at TIMESTAMP,
+    user_name STRING
+);
+
+
+--governance registery 
+CREATE OR REPLACE TABLE DEMO_DB.GOVERNANCE.MODEL_SCHEMA_REGISTRY (
+    database_name STRING,
+    schema_name STRING,
+    table_name STRING,
+    column_name STRING,
+    data_type string,
+    loaded_at timestamp
+);
+
+select * from DEMO_DB.GOVERNANCE.MODEL_SCHEMA_REGISTRY;
+
+select * from demo_db.information_schema.columns
+where table_name = 'MODEL_SCHEMA_REGISTRY';
+
+CREATE SCHEMA IF NOT EXISTS PIPELINE;
+
+SHOW TABLES;
+
+
+-- Create Customer Table
+CREATE OR REPLACE TABLE STG_Customer (
+    CUST_ID STRING,
+    CUST_NAME STRING,
+    OUTSTANDING_AMT NUMBER,
+    CRID STRING,
+    LOCATION STRING,
+    CUST_CREATED DATE
+);
+
+-- Insert Data
+INSERT INTO STG_Customer (CUST_ID, CUST_NAME, OUTSTANDING_AMT, CRID, LOCATION, CUST_CREATED) VALUES
+('C-101', 'Raman', 500, 'ABVC', 'LA', '2025-08-11'),
+('C-101', 'Raman', 500, 'ABVC', 'LA', '2025-08-12'),  -- in the Cleansed layer we should have latest record
+('C-102', 'Rahul', 200, 'XYZ', 'AF', '2025-08-14'),
+('C-103', 'Anshi', 5000, 'MNCD', 'GA', '2025-08-15');
+
+
+CREATE OR REPLACE TABLE ITEM (
+    CUST_ID STRING,
+    ITEM_ID STRING,
+    ITEM_CATEGORY STRING,
+    ITEM_STATUS STRING,
+    COUNTS NUMBER,
+    PRICE NUMBER
+);
+
+INSERT INTO ITEM (CUST_ID, ITEM_ID, ITEM_CATEGORY, ITEM_STATUS, COUNTS, PRICE) VALUES
+('C-101', 'a-101', 'Printer', 'Active', 1, 100),
+('C-101', 'a-101', 'Printer', 'Active', 4, 200),  -- this row should be there
+('C-102', 'a-103', 'Ink', 'Active', 2, 300),
+('C-103', 'a-103', 'Ribbon', 'Active', 3, 100),
+('C-103', 'a-103', 'Ribbon', 'Active', 2, 200);   -- We need this row as this is highest price
+
+
+select * from item;  --C-101 duplicates
+
+select * from stg_customer;
+
+create database dbt_practice;
+
+use database dbt_practice;
+
+CREATE OR REPLACE TABLE CUSTOMERS (
+    CUSTOMER_ID   STRING        NOT NULL,
+    CUSTOMER_NAME STRING,
+    EMAIL         STRING,
+    CITY          STRING,
+    STATE         STRING,
+    UPDATED_AT    TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO CUSTOMERS (CUSTOMER_ID, CUSTOMER_NAME, EMAIL, CITY, STATE)
+VALUES
+    ('C001', 'John Doe',  'john@example.com',  'New York', 'NY'),
+    ('C002', 'Jane Smith','jane@example.com',  'Chicago',  'IL'),
+    ('C003', 'Amit Shah', 'amit@example.com',  'San Jose', 'CA');
+
+
+
+    CREATE OR REPLACE TABLE demo_db.public.customers (
+    id INT,
+    name STRING,
+    email STRING,
+    country STRING,
+    created_at DATE
+);
+
+
+INSERT INTO demo_db.public.customers VALUES
+    (1, 'Alice Smith',   'alice@example.com',      'US',  '2021-01-01'),
+    (2, 'Bob Johnson',   'bob@example.com',        'CA',  '2021-03-15'),
+    (3, 'Charlie Lee',   'charlie@example.com',    'IN',  '2021-06-20'),
+    (4, 'Diana Chen',    'dianaa@example.com',     'UK',  '2021-09-05'),   -- wrong email
+    (5, 'Ethan Ray',     'ethan@example.com',      'US',  '2022-01-10'),
+    (6, 'Fiona Gupta',   'fiona@example.com',      'AU',  '2022-02-12'),
+    (7, 'George O',      NULL,                     'US',  '2022-03-25'),   -- null email
+    (8, 'Hana Kim',      'hana@example.com',       'KR',  '2022-04-30'),
+    (9, 'Ivan Popov',    'ivan@example.com',       'RU',  '2022-06-14'),
+    (10,'Julia Dey',     'julia@examplecom',       'IN',  '2022-07-01');   -- wrong email
+
+
+    CREATE OR REPLACE TABLE demo_db.public.orders (
+    order_id INT,
+    customer_id INT,
+    status STRING,
+    amount FLOAT,
+    order_date DATE
+);
+
+INSERT INTO demo_db.public.orders VALUES
+    (101, 1, 'shipped',   20000.00, '2022-01-10'),   -- high amount value
+    (102, 2, 'completed',   100.00, '2022-01-15'),
+    (103, 3, 'pending',   30000.00, '2022-01-20'),   -- high amount value
+    (104, 4, 'completed',  -100.00, '2022-02-05'),   -- negative amount value
+    (105, 5, 'shipped',     500.00, '2022-02-12'),
+    (106, 6, 'pending',     275.40, '2022-02-20'),
+    (107, 7, 'shipped',      95.99, '2022-03-01'),
+    (108, 8, 'completed',   320.00, '2026-03-15'),   -- future date value
+    (109, 9, 'shipped',     410.80, '2022-04-01'),
+    (110,10, 'pending',     130.00, '2022-04-10');
+
+
+
+
+
+    select * from customers;
+
+    CREATE OR REPLACE TABLE ORDERS (
+    ORDER_ID     STRING        NOT NULL,
+    CUSTOMER_ID  STRING,
+    ORDER_DATE   DATE,
+    ORDER_STATUS STRING,
+    ORDER_AMOUNT NUMBER(10,2)
+);
+
+INSERT INTO ORDERS (ORDER_ID, CUSTOMER_ID, ORDER_DATE, ORDER_STATUS, ORDER_AMOUNT)
+VALUES
+    ('O1001', 'C001', '2025-09-01', 'Pending', 250.00),
+    ('O1002', 'C002', '2025-09-02', 'Shipped', 100.00),
+    ('O1003', 'C003', '2025-09-04', 'Delivered', 325.50);  -- random generated row
+
+    UPDATE CUSTOMERS
+SET EMAIL = 'john.doe@newmail.com',
+    CITY = 'Boston',
+    UPDATED_AT = CURRENT_TIMESTAMP
+WHERE CUSTOMER_ID = 'C001';
+
+-- have another change
+
+UPDATE CUSTOMERS
+SET CITY = 'Los Angeles',
+    STATE = 'CA',
+    UPDATED_AT = CURRENT_TIMESTAMP
+WHERE CUSTOMER_ID = 'C002';
+
+
+select * from DEMO_DB.SNAPSHOTS.CUSTOMERS_SNAPSHOT;
+
+UPDATE ORDERS
+SET ORDER_STATUS = 'Shipped',
+    ORDER_AMOUNT = 240.00
+WHERE ORDER_ID = 'O1001';
+
+-- O1002: Order delivered later
+UPDATE ORDERS
+SET ORDER_STATUS = 'Delivered'
+WHERE ORDER_ID = 'O1002';
+
+
+--dbt tests
+
+CREATE OR REPLACE TABLE demo_db.public.customers (
+    id INT,
+    name STRING,
+    email STRING,
+    country STRING,
+    created_at DATE
+);
+
+INSERT INTO demo_db.public.customers VALUES
+    (1, 'Alice Smith',  'alice@example.com',  'US', '2021-01-01'),
+    (2, 'Bob Johnson',  'bob@example.com',    'CA', '2021-03-15'),
+    (3, 'Charlie Lee',  'charlie@example.com','IN', '2021-06-20'),
+    (4, 'Diana Chen',   'diana@example.com',  'UK', '2021-09-05'),
+    (5, 'Ethan Ray',    'ethan@example.com',  'US', '2022-01-10'),
+    (6, 'Fiona Gupta',  'fiona@example.com',  'AU', '2022-02-12'),
+    (7, 'George O.',    'george@example.com', 'US', '2022-03-25'),
+    (8, 'Hana Kim',     'hana@example.com',   'KR', '2022-04-30'),
+    (9, 'Ivan Popov',   'ivan@example.com',   'RU', '2022-06-14'),
+    (10,'Julia Dey',    'julia@example.com',  'IN', '2022-07-01');
+
+
+
+CREATE OR REPLACE TABLE demo_db.public.orders (
+    order_id INT,
+    customer_id INT,
+    status STRING,
+    amount FLOAT,
+    order_date DATE
+);
+
+
+INSERT INTO demo_db.public.orders VALUES
+    (101, 1, 'shipped',    250.75, '2022-01-10'),
+    (102, 2, 'completed',  100.00, '2022-01-15'),
+    (103, 3, 'pending',    300.50, '2022-01-20'),
+    (104, 4, 'completed',  150.50, '2022-02-05'),
+    (105, 5, 'shipped',    600.00, '2022-02-12'),
+    (106, 6, 'pending',    275.40, '2022-02-20'),
+    (107, 7, 'shipped',     95.99, '2022-03-01'),
+    (108, 8, 'completed',  320.00, '2022-03-15'),
+    (109, 9, 'shipped',    410.80, '2022-04-01'),
+    (110, 10,'pending',    130.00, '2022-04-10'),
+    (111, 1, 'completed',  280.25, '2022-05-15'),
+    (112, 2, 'shipped',    350.00, '2022-05-15'),
+    (113, 3, 'pending',    420.90, '2022-06-01'),
+    (114, 4, 'completed',  110.00, '2022-06-18'),
+    (115, 5, 'shipped',    560.00, '2022-07-05'),
+    (116, 6, 'completed',  230.50, '2022-07-10'),
+    (117, 7, 'pending',    310.75, '2022-08-01'),
+    (118, 8, 'shipped',    200.00, '2022-08-15'),
+    (119, 9, 'completed',  370.60, '2022-09-01'),
+    (120,10, 'pending',    155.25, '2022-09-20');
+
+
+
+--duplicate - negative scenario 
+
+-- Duplicate order_id (will fail UNIQUE)
+INSERT INTO demo_db.public.orders VALUES
+    (101, 1, 'completed', 200.00, '2022-10-01');
+
+-- Invalid status (will fail accepted_values)
+INSERT INTO demo_db.public.orders VALUES
+    (121, 2, 'refunded', 300.00, '2022-10-05');
+
+-- Missing customer (will fail relationships / foreign key)
+INSERT INTO demo_db.public.orders VALUES
+    (122, 999, 'pending', 400.00, '2022-10-07');
+
+
+
+    --schema level 
+
+    CREATE OR REPLACE TABLE ORDERS (
+    ORDER_ID NUMBER,
+    CUST_ID  NUMBER,
+    STATUS   STRING,
+    AMOUNT   NUMBER(10,2)
+);
+
+
+
+INSERT INTO ORDERS (ORDER_ID, CUST_ID, STATUS, AMOUNT) VALUES
+    (101, 1, 'O', 100.00),
+    (102, 1, 'O', 200.00),      -- duplicate
+    (103, 2, NULL, 50.00),      -- null
+    (104, 2, 'X', 75.00),       -- invalid value
+    (105, 999, 'O', 80.00),     -- orphan customer
+    (106, 3, 'F', 120.00);
+
+
+    CREATE OR REPLACE TABLE CUSTOMERS (
+    CUST_ID  NUMBER,
+    NAME     STRING,
+    EMAIL    STRING,
+    COUNTRY  STRING
+);
+INSERT INTO CUSTOMERS (CUST_ID, NAME, EMAIL, COUNTRY) VALUES
+    (1, 'Alice', 'alice@example.com', 'INDIA'),
+    (2, 'Bob',   'bob@example.com',   'USA'),
+    (3, 'Cara',  'cara@example.com',  'UK');
+
+
+ select * from DEMO_DB.AUDIT.source_accepted_values_rawsource_orders_STATUS__O__F__P;
